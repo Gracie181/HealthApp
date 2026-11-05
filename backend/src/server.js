@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import pool from "./db/connection.js";
+import checkRoutes from "./routes/checkRoutes.js";
 
 const app = express();
 
@@ -24,7 +25,8 @@ app.get("/api/db-test", async (req, res) => {
   }
 });
 
-// TODO: app.use("/api/check", checkRoutes);
+app.use("/api/check", checkRoutes);
+
 // TODO: app.use("/api/hospitals", hospitalRoutes);
 
 const PORT = process.env.PORT || 5000;
