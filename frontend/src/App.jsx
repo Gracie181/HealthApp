@@ -2,6 +2,61 @@ import { useState } from "react";
 import "./App.css";
 
 const API_URL = "http://localhost:5000/api/check";
+const FALLBACK_MAPS_URL =
+  "https://www.google.com/maps/search/?api=1&query=hospitals+near+me";
+
+function NearbyHospitals() {
+  const [status, setStatus] = useState("idle"); // idle | loading | ready | error
+  const [mapsUrl, setMapsUrl] = useState("");
+
+  function findHospitals() {
+    if (!navigator.geolocation) {
+      setStatus("error");
+      return;
+    }
+
+    setStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const query = encodeURIComponent(`hospitals near ${latitude},${longitude}`);
+        setMapsUrl(`https://www.google.com/maps/search/?api=1&query=${query}`);
+        setStatus("ready");
+      },
+      () => setStatus("error"),
+      { timeout: 10000 }
+    );
+  }
+
+  return (
+    <div className="nearby">
+      <button type="button" onClick={findHospitals} disabled={status === "loading"}>
+        {status === "loading" ? "Finding your location..." : "Find hospitals near me"}
+      </button>
+
+      {status === "ready" && (
+        <a className="map-link" href={mapsUrl} target="_blank" rel="noopener noreferrer">
+          Open nearby hospitals in Google Maps
+        </a>
+      )}
+
+      {status === "error" && (
+        <p className="small">
+          We could not get your location. Allow location access in your browser, or{" "}
+          <a href={FALLBACK_MAPS_URL} target="_blank" rel="noopener noreferrer">
+            search Google Maps directly
+          </a>
+          .
+        </p>
+      )}
+
+      <p className="small">
+        Your location is used only to build the Google Maps link. It is not sent
+        to our server.
+      </p>
+    </div>
+  );
+}
 
 export default function App() {
   const [symptoms, setSymptoms] = useState("");
@@ -123,6 +178,7 @@ export default function App() {
               <li key={reason}>{reason}</li>
             ))}
           </ul>
+          <NearbyHospitals />
         </section>
       )}
 
@@ -147,6 +203,13 @@ export default function App() {
             </ul>
           )}
           <p className="small">{result.disclaimer}</p>
+        </section>
+      )}
+
+      {!(result && result.emergency) && (
+        <section className="card">
+          <h2>Need to see a doctor?</h2>
+          <NearbyHospitals />
         </section>
       )}
     </main>
