@@ -1,4 +1,50 @@
+:root {
+  --lagoon: #0b3c49;
+  --lagoon-hover: #14566a;
+  --mist: #eef4f3;
+  --paper: #ffffff;
+  --marigold: #f4b400;
+  --marigold-hover: #dda200;
+  --coral: #e4572e;
+  --signal: #b3261e;
+  --signal-hover: #8f1d17;
+  --signal-tint: #fdecea;
+  --muted: #46636b;
+  --line: #c9dad8;
+  --field: #6b8a87;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  background: #f5f7fa;
+  background: var(--mist);
+  color: var(--lagoon);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  margin: 0;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lagoon);
+  outline-offset: 3px;
 }
