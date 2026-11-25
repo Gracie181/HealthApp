@@ -4,7 +4,13 @@ import "./App.css";
 const API_URL = "http://localhost:5000/api/check";
 const MAPS_FALLBACK_URL =
   "https://www.google.com/maps/search/?api=1&query=hospitals+near+me";
-const CONSENT_KEY = "afya-check-consent-v1";
+const CONSENT_KEY = "afya-check-consent-v2";
+
+const URGENCY = {
+  self_care: { label: "Rest and self-care is likely enough", tone: "calm" },
+  see_pharmacist: { label: "Talk to a pharmacist", tone: "calm" },
+  see_doctor_soon: { label: "See a doctor soon", tone: "watch" },
+};
 
 function readConsent() {
   try {
@@ -119,9 +125,11 @@ function Consent({ onAgree }) {
           <div>
             <dt>Your privacy</dt>
             <dd>
-              We do not ask for your name. Your answers are used only to
-              produce your results. If you share your location, it is used only
-              to open Google Maps and is not sent to us.
+              We do not ask for your name. Your symptoms, age and pregnancy
+              answer are sent to Google's Gemini AI service to suggest possible
+              causes, and we do not store them on our server. If you share your
+              location, it is used only to open Google Maps and is not sent to
+              us.
             </dd>
           </div>
         </dl>
@@ -286,6 +294,33 @@ function Checker({ onReview }) {
                 </a>
                 <NearbyHospitals />
               </div>
+            </section>
+          )}
+
+          {result && !result.emergency && result.analysis && (
+            <section className="panel reveal">
+              <h2>What this could be</h2>
+              <p
+                className={`urgency urgency-${
+                  URGENCY[result.analysis.urgency]?.tone ?? "calm"
+                }`}
+              >
+                {URGENCY[result.analysis.urgency]?.label ??
+                  "Check with a health worker"}
+              </p>
+              <ul className="remedies">
+                {result.analysis.possibleCauses.map((cause) => (
+                  <li key={cause.name}>
+                    <h3>{cause.name}</h3>
+                    <p>{cause.why}</p>
+                  </li>
+                ))}
+              </ul>
+              {result.analysis.advice && <p>{result.analysis.advice}</p>}
+              <p className="small disclaimer">
+                Suggested by an AI model. These are possibilities, not a
+                diagnosis.
+              </p>
             </section>
           )}
 

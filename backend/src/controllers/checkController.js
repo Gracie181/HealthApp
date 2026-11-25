@@ -1,5 +1,6 @@
 import { checkRedFlags } from "../services/redFlags.js";
 import { guessCategories, findSafeMedicines } from "../services/otcService.js";
+import { analyseSymptoms } from "../services/aiService.js";
 
 export async function runCheck(req, res) {
   try {
@@ -14,7 +15,7 @@ export async function runCheck(req, res) {
       return res.status(400).json({ error: "Please enter a valid age." });
     }
 
-    // Emergencies come first, before anything else
+    // 1. Emergencies come first, in plain code
     const redFlag = checkRedFlags({ symptomsText: symptoms, age: ageNumber });
     if (redFlag.emergency) {
       return res.json({
@@ -24,6 +25,23 @@ export async function runCheck(req, res) {
       });
     }
 
+    // 2. AI suggests possible causes and urgency (can be null if unavailable)
+    const analysis = await analyseSymptoms({
+      symptoms,
+      age: ageNumber,
+      pregnant: pregnant === true,
+    });
+
+    // The AI can only make the result more cautious, never less
+    if (analysis && analysis.urgency === "urgent") {
+      return res.json({
+        emergency: true,
+        reasons: ["Your symptoms may need urgent medical attention"],
+        message: "Please go to the nearest hospital or call emergency services now.",
+      });
+    }
+
+    // 3. Medicines come from the database, never from the AI
     const categories = guessCategories(symptoms);
     const medicines = await findSafeMedicines({
       categories,
@@ -36,6 +54,7 @@ export async function runCheck(req, res) {
 
     res.json({
       emergency: false,
+      analysis,
       medicines,
       disclaimer:
         "This is general information, not a diagnosis. Confirm with a pharmacist or doctor.",
