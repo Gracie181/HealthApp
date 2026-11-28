@@ -1,9 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 
-const API_URL = "http://localhost:5000/api/check";
-const MAPS_FALLBACK_URL =
-  "https://www.google.com/maps/search/?api=1&query=hospitals+near+me";
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/check`;
+const MAPS_FALLBACK_URL = "https://www.google.com/maps/search/?api=1&query=hospitals+near+me";
 const CONSENT_KEY = "afya-check-consent-v2";
 
 const URGENCY = {
